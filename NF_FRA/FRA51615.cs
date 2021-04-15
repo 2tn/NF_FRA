@@ -198,7 +198,7 @@ namespace NF_FRA
                 Write(":OUTP:STAT?\n");
                 var result = ReceiveData();
                 Debug.WriteLine(result.Replace("\n", "_"));
-                return result == "ON" ? true : false;
+                return result == "OFF" ? true : false;
             }
             return false;
         }
@@ -207,7 +207,7 @@ namespace NF_FRA
         {
             if (port.IsOpen)
             {
-                Write($":OUTP:STAT {(value ? "ON" : "OFF")}\n");
+                Write($":OUTP:STAT {(value ? "OFF" : "ON")}\n");
                 int count = 0;
                 while (getACDC() != value) { if (count > 10) break; count++; }
                 return getACDC();
