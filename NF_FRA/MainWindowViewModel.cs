@@ -63,6 +63,28 @@ namespace NF_FRA
                 OnPropertyChanged(nameof(SavePath));
                 FileList.Clear();
                 var fileList = Directory.GetFiles(SavePath, "*.csv");
+                Array.Sort(fileList, (x, y) =>
+                {
+                    try
+                    {
+                        int xl = x.Split('.').Length;
+                        int yl = y.Split('.').Length;
+                        if (xl >= 2) x = x.Split('.')[xl - 2];
+                        if (yl >= 2) y = y.Split('.')[yl - 2];
+                        int xnum = 0, ynum = 0, xcurr = x.Length - 1, ycurr = y.Length - 1;
+                        while (xcurr >= 0 && x[xcurr] >= '0' && x[xcurr] <= '9') { xcurr--; }
+                        if (xcurr + 1 != x.Length) xnum = int.Parse(x.Substring(xcurr + 1));
+                        while (ycurr >= 0 && y[ycurr] >= '0' && y[ycurr] <= '9') { ycurr--; }
+                        if (ycurr + 1 != y.Length) ynum = int.Parse(y.Substring(ycurr + 1));
+                        int namecomp = y.Substring(0, ycurr + 1).CompareTo(x.Substring(0, xcurr + 1));
+                        return namecomp != 0 ? namecomp : ynum.CompareTo(xnum);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        return 0;
+                    }
+                });
                 foreach (var path in fileList)
                     FileList.Add(new CSVFile(path.Split("\\")[^1], File.GetLastWriteTime(path)));
                 RefreshCumulativeNumber();
