@@ -313,6 +313,39 @@ namespace NF_FRA
             return 0;
         }
 
+        public string getMemoryName(int index)
+        {
+            if (port.IsOpen && index >= 1 && index <= 20)
+            {
+                Write($":DATA:STAT:DEF? {index}\n");
+                var result = ReceiveData();
+                Debug.WriteLine(result);
+                return result;
+            }
+            return "";
+        }
+
+        public string[] getMemoryNames()
+        {
+            int LEN = 20;
+            string[] res = new string[LEN];
+            for (int i = 0; i < LEN; i++)
+                res[i] = getMemoryName(i + 1);
+            return res;
+        }
+
+        public void setReCallData(int index, string dist)
+        {
+            if (port.IsOpen && index >= 1 && index <= 20 && (dist == "MEAS" || dist == "REF"))
+                Write($":DATA:REC {index}, {dist}\n");
+        }
+        public void setMemoryCopy(string dist)
+        {
+            if (port.IsOpen && (dist == "REF" || dist == "EQU" || dist == "OPEN" || dist == "SHOR" || dist == "LOAD"))
+                Write($":MEM:COPY:NAME {dist}\n");
+        }
+
+
         public string ReceiveData(int timeout = int.MaxValue)
         {
             byte[] buffer = new byte[1];
@@ -375,6 +408,7 @@ namespace NF_FRA
                             vm.OnPropertyChanged(nameof(vm.Accumulation));
                             vm.ACDCBackground = false;
                             vm.OnPropertyChanged(nameof(vm.ACDCBackground));
+                            vm.MemoryList.Clear();
                         }
                     }
                     else
@@ -395,6 +429,10 @@ namespace NF_FRA
                                 vm.OnPropertyChanged(nameof(vm.Accumulation));
                                 vm.ACDCBackground = fra51615.getACDC();
                                 vm.OnPropertyChanged(nameof(vm.ACDCBackground));
+                                vm.MemoryList.Clear();
+                                var memoryList = fra51615.getMemoryNames();
+                                for (int i = 0; i < memoryList.Length; i++)
+                                    vm.MemoryList.Add(new MainWindowViewModel.MemoryFile(i + 1, memoryList[i]));
                             }
                             catch (Exception) { }
                         }

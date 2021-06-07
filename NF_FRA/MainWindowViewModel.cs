@@ -124,6 +124,27 @@ namespace NF_FRA
             }
         }
 
+        public class MemoryFile { public MemoryFile(int index, string fileName) { Index = index; FileName = fileName; } public int Index { get; set; } public string FileName { get; set; } }
+
+        private ObservableCollection<MemoryFile> memoryList = new ObservableCollection<MemoryFile>();
+        public ObservableCollection<MemoryFile> MemoryList { get { return memoryList; } set { if (memoryList != value) memoryList = value; } }
+
+        private MemoryFile selectedMemory;
+        public MemoryFile SelectedMemory
+        {
+            get { return selectedMemory; }
+            set
+            {
+                selectedMemory = value;
+                OnPropertyChanged(nameof(SelectedMemory));
+                if (selectedMemory != null)
+                {
+                    fra51615.setReCallData(SelectedMemory.Index, "MEAS");
+                    fra51615.setMemoryCopy("SHOR");
+                }
+            }
+        }
+
         public FRA51615.ConnectCommand FRA51615Connect
         { get; private set; }
 
