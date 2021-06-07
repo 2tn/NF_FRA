@@ -33,6 +33,7 @@ namespace NF_FRA
             SettingCommand = new SettingCommand(this);
             ACDCCommand = new ACDCCommand(this);
             ZeroCheckCommand = new ZeroCheckCommand(this);
+            ShortCorrectionCommand = new ShortCorrectionCommand(this);
             UpCommand = new UpCommand(this);
             DownCommand = new DownCommand(this);
             AbortCommand = new AbortCommand(this);
@@ -164,6 +165,8 @@ namespace NF_FRA
         { get; private set; }
         public ZeroCheckCommand ZeroCheckCommand
         { get; private set; }
+        public ShortCorrectionCommand ShortCorrectionCommand
+        { get; private set; }
         public ACDCCommand ACDCCommand
         { get; private set; }
         public DownCommand DownCommand
@@ -180,6 +183,10 @@ namespace NF_FRA
         private bool zeroCheckBackground = false;
         public bool ZeroCheckBackground
         { get { return zeroCheckBackground; } set { zeroCheckBackground = value; OnPropertyChanged(nameof(ZeroCheckBackground)); } }
+
+        private bool shortCorrectionBackground = false;
+        public bool ShortCorrectionBackground
+        { get { return shortCorrectionBackground; } set { shortCorrectionBackground = value; OnPropertyChanged(nameof(ShortCorrectionBackground)); } }
 
         private bool upBackground = false;
         public bool UpBackground

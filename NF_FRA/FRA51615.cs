@@ -215,6 +215,30 @@ namespace NF_FRA
             return false;
         }
 
+        public bool getShortCorrection()
+        {
+            if (port.IsOpen)
+            {
+                Write(":SENS:CORR:SHOR?\n");
+                var result = ReceiveData();
+                Debug.WriteLine(result.Replace("\n", "_"));
+                return result == "0" ? true : false;
+            }
+            return false;
+        }
+
+        public bool setShortCorrection(bool value)
+        {
+            if (port.IsOpen)
+            {
+                Write($":SENS:CORR:SHOR {(value ? 0 : 1)}\n");
+                int count = 0;
+                while (getShortCorrection() != value) { if (count > 10) break; count++; }
+                return getShortCorrection();
+            }
+            return false;
+        }
+
         public void setXY()
         {
             if (port.IsOpen)
@@ -408,6 +432,8 @@ namespace NF_FRA
                             vm.OnPropertyChanged(nameof(vm.Accumulation));
                             vm.ACDCBackground = false;
                             vm.OnPropertyChanged(nameof(vm.ACDCBackground));
+                            vm.ShortCorrectionBackground = false;
+                            vm.OnPropertyChanged(nameof(vm.ShortCorrectionBackground));
                             vm.MemoryList.Clear();
                         }
                     }
@@ -429,6 +455,8 @@ namespace NF_FRA
                                 vm.OnPropertyChanged(nameof(vm.Accumulation));
                                 vm.ACDCBackground = fra51615.getACDC();
                                 vm.OnPropertyChanged(nameof(vm.ACDCBackground));
+                                vm.ShortCorrectionBackground = fra51615.getShortCorrection();
+                                vm.OnPropertyChanged(nameof(vm.ShortCorrectionBackground));
                                 vm.MemoryList.Clear();
                                 var memoryList = fra51615.getMemoryNames();
                                 for (int i = 0; i < memoryList.Length; i++)
@@ -469,6 +497,32 @@ namespace NF_FRA
                     bool status = fra51615.getACDC();
                     var res = fra51615.setACDC(!status);
                     vm.ACDCBackground = res;
+                }
+                else
+                    MessageBox.Show("接続されていません。", "エラー");
+
+            }
+        }
+
+        public class ShortCorrectionCommand : ICommand
+        {
+            public event EventHandler CanExecuteChanged;
+            private MainWindowViewModel vm;
+            public ShortCorrectionCommand(MainWindowViewModel viewModel)
+            {
+                vm = viewModel;
+            }
+
+            public bool CanExecute(object parameter) { return true; }
+
+            public void Execute(object parameter)
+            {
+                FRA51615 fra51615 = vm.fra51615;
+                if (fra51615.port.IsOpen)
+                {
+                    bool status = fra51615.getShortCorrection();
+                    var res = fra51615.setShortCorrection(!status);
+                    vm.ShortCorrectionBackground = res;
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");

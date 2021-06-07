@@ -160,6 +160,18 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    <Button Content="SHORT CORRECTION" Margin="5" Command="{Binding ShortCorrectionCommand}" Foreground="White">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Green"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShortCorrectionBackground}" Value="True">
+                                        <Setter Property="Background" Value="Red"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <Button Content="UP" Margin="5" Command="{Binding UpCommand}" Foreground="White">
                         <Button.Style>
                             <Style TargetType="Button">
