@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Cursor = System.Windows.Forms.Cursor;
+using Cursors = System.Windows.Forms.Cursors;
 
 namespace NF_FRA
 {
@@ -19,6 +21,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 if (vm.MinFreq >= 0.00001 && vm.MinFreq <= 15000000 &&
                    vm.MaxFreq >= 0.00001 && vm.MaxFreq <= 15000000 &&
                    vm.MinFreq < vm.MaxFreq &&
@@ -65,6 +69,7 @@ namespace NF_FRA
                 {
                     MessageBox.Show("値が不正です。", "エラー");
                 }
+                Cursor.Current = cursor;
             }
         }
         public class SelectFolderCommand : ICommand

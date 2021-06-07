@@ -3,13 +3,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
-using System.Windows;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static NF_FRA.CA5351;
 using static NF_FRA.FRA51615;
 using static NF_FRA.ButtonCommands;
 using System.Reflection;
+using System.Windows.Forms;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace NF_FRA
 {
@@ -119,9 +120,12 @@ namespace NF_FRA
             get { return selectedFile; }
             set
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 selectedFile = value;
                 OnPropertyChanged(nameof(SelectedFile));
                 if (SelectedFile != null) DrawGraph(SelectedFile.FileName);
+                Cursor.Current = cursor;
             }
         }
 
@@ -136,6 +140,8 @@ namespace NF_FRA
             get { return selectedMemory; }
             set
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 selectedMemory = value;
                 OnPropertyChanged(nameof(SelectedMemory));
                 if (selectedMemory != null)
@@ -143,6 +149,7 @@ namespace NF_FRA
                     fra51615.setReCallData(SelectedMemory.Index, "MEAS");
                     fra51615.setMemoryCopy("SHOR");
                 }
+                Cursor.Current = cursor;
             }
         }
 

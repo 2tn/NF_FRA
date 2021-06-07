@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Cursor = System.Windows.Forms.Cursor;
+using Cursors = System.Windows.Forms.Cursors;
 
 namespace NF_FRA
 {
@@ -413,6 +415,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.PortName != null)
                 {
@@ -475,6 +479,7 @@ namespace NF_FRA
                 {
                     MessageBox.Show("ポートを選択してください。", "エラー");
                 }
+                Cursor.Current = cursor;
             }
         }
 
@@ -491,6 +496,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -500,7 +507,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
-
+                Cursor.Current = cursor;
             }
         }
 
@@ -517,6 +524,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -526,7 +535,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
-
+                Cursor.Current = cursor;
             }
         }
 
@@ -543,6 +552,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -555,6 +566,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 
@@ -571,6 +583,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -583,6 +597,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 
@@ -599,11 +614,14 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                     fra51615.sendAbort();
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 
