@@ -3,6 +3,8 @@ using System.IO.Ports;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Cursor = System.Windows.Forms.Cursor;
+using Cursors = System.Windows.Forms.Cursors;
 
 namespace NF_FRA
 {
@@ -163,6 +165,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 CA5351 ca5351 = vm.ca5351;
                 if (ca5351.PortName != null)
                 {
@@ -204,6 +208,7 @@ namespace NF_FRA
                 {
                     MessageBox.Show("ポートを選択してください。", "エラー");
                 }
+                Cursor.Current = cursor;
             }
         }
 
@@ -220,6 +225,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 CA5351 ca5351 = vm.ca5351;
                 if (ca5351.IsOpen)
                 {
@@ -229,6 +236,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
     }

@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Cursor = System.Windows.Forms.Cursor;
+using Cursors = System.Windows.Forms.Cursors;
 
 namespace NF_FRA
 {
@@ -215,6 +217,30 @@ namespace NF_FRA
             return false;
         }
 
+        public bool getShortCorrection()
+        {
+            if (port.IsOpen)
+            {
+                Write(":SENS:CORR:SHOR?\n");
+                var result = ReceiveData();
+                Debug.WriteLine(result.Replace("\n", "_"));
+                return result == "0" ? true : false;
+            }
+            return false;
+        }
+
+        public bool setShortCorrection(bool value)
+        {
+            if (port.IsOpen)
+            {
+                Write($":SENS:CORR:SHOR {(value ? 0 : 1)}\n");
+                int count = 0;
+                while (getShortCorrection() != value) { if (count > 10) break; count++; }
+                return getShortCorrection();
+            }
+            return false;
+        }
+
         public void setXY()
         {
             if (port.IsOpen)
@@ -313,6 +339,39 @@ namespace NF_FRA
             return 0;
         }
 
+        public string getMemoryName(int index)
+        {
+            if (port.IsOpen && index >= 1 && index <= 20)
+            {
+                Write($":DATA:STAT:DEF? {index}\n");
+                var result = ReceiveData();
+                Debug.WriteLine(result);
+                return result;
+            }
+            return "";
+        }
+
+        public string[] getMemoryNames()
+        {
+            int LEN = 20;
+            string[] res = new string[LEN];
+            for (int i = 0; i < LEN; i++)
+                res[i] = getMemoryName(i + 1);
+            return res;
+        }
+
+        public void setReCallData(int index, string dist)
+        {
+            if (port.IsOpen && index >= 1 && index <= 20 && (dist == "MEAS" || dist == "REF"))
+                Write($":DATA:REC {index}, {dist}\n");
+        }
+        public void setMemoryCopy(string dist)
+        {
+            if (port.IsOpen && (dist == "REF" || dist == "EQU" || dist == "OPEN" || dist == "SHOR" || dist == "LOAD"))
+                Write($":MEM:COPY:NAME {dist}\n");
+        }
+
+
         public string ReceiveData(int timeout = int.MaxValue)
         {
             byte[] buffer = new byte[1];
@@ -356,6 +415,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.PortName != null)
                 {
@@ -375,6 +436,9 @@ namespace NF_FRA
                             vm.OnPropertyChanged(nameof(vm.Accumulation));
                             vm.ACDCBackground = false;
                             vm.OnPropertyChanged(nameof(vm.ACDCBackground));
+                            vm.ShortCorrectionBackground = false;
+                            vm.OnPropertyChanged(nameof(vm.ShortCorrectionBackground));
+                            vm.MemoryList.Clear();
                         }
                     }
                     else
@@ -395,6 +459,12 @@ namespace NF_FRA
                                 vm.OnPropertyChanged(nameof(vm.Accumulation));
                                 vm.ACDCBackground = fra51615.getACDC();
                                 vm.OnPropertyChanged(nameof(vm.ACDCBackground));
+                                vm.ShortCorrectionBackground = fra51615.getShortCorrection();
+                                vm.OnPropertyChanged(nameof(vm.ShortCorrectionBackground));
+                                vm.MemoryList.Clear();
+                                var memoryList = fra51615.getMemoryNames();
+                                for (int i = 0; i < memoryList.Length; i++)
+                                    vm.MemoryList.Add(new MainWindowViewModel.MemoryFile(i + 1, memoryList[i]));
                             }
                             catch (Exception) { }
                         }
@@ -409,6 +479,7 @@ namespace NF_FRA
                 {
                     MessageBox.Show("ポートを選択してください。", "エラー");
                 }
+                Cursor.Current = cursor;
             }
         }
 
@@ -425,6 +496,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -434,7 +507,35 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
+            }
+        }
 
+        public class ShortCorrectionCommand : ICommand
+        {
+            public event EventHandler CanExecuteChanged;
+            private MainWindowViewModel vm;
+            public ShortCorrectionCommand(MainWindowViewModel viewModel)
+            {
+                vm = viewModel;
+            }
+
+            public bool CanExecute(object parameter) { return true; }
+
+            public void Execute(object parameter)
+            {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
+                FRA51615 fra51615 = vm.fra51615;
+                if (fra51615.port.IsOpen)
+                {
+                    bool status = fra51615.getShortCorrection();
+                    var res = fra51615.setShortCorrection(!status);
+                    vm.ShortCorrectionBackground = res;
+                }
+                else
+                    MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 
@@ -451,6 +552,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -463,6 +566,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 
@@ -479,6 +583,8 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                 {
@@ -491,6 +597,7 @@ namespace NF_FRA
                 }
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 
@@ -507,11 +614,14 @@ namespace NF_FRA
 
             public void Execute(object parameter)
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 FRA51615 fra51615 = vm.fra51615;
                 if (fra51615.port.IsOpen)
                     fra51615.sendAbort();
                 else
                     MessageBox.Show("接続されていません。", "エラー");
+                Cursor.Current = cursor;
             }
         }
 

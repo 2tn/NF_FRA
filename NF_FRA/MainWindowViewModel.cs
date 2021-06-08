@@ -3,13 +3,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Ports;
-using System.Windows;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static NF_FRA.CA5351;
 using static NF_FRA.FRA51615;
 using static NF_FRA.ButtonCommands;
 using System.Reflection;
+using System.Windows.Forms;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace NF_FRA
 {
@@ -33,6 +34,7 @@ namespace NF_FRA
             SettingCommand = new SettingCommand(this);
             ACDCCommand = new ACDCCommand(this);
             ZeroCheckCommand = new ZeroCheckCommand(this);
+            ShortCorrectionCommand = new ShortCorrectionCommand(this);
             UpCommand = new UpCommand(this);
             DownCommand = new DownCommand(this);
             AbortCommand = new AbortCommand(this);
@@ -63,6 +65,28 @@ namespace NF_FRA
                 OnPropertyChanged(nameof(SavePath));
                 FileList.Clear();
                 var fileList = Directory.GetFiles(SavePath, "*.csv");
+                Array.Sort(fileList, (x, y) =>
+                {
+                    try
+                    {
+                        int xl = x.Split('.').Length;
+                        int yl = y.Split('.').Length;
+                        if (xl >= 2) x = x.Split('.')[xl - 2];
+                        if (yl >= 2) y = y.Split('.')[yl - 2];
+                        int xnum = 0, ynum = 0, xcurr = x.Length - 1, ycurr = y.Length - 1;
+                        while (xcurr >= 0 && x[xcurr] >= '0' && x[xcurr] <= '9') { xcurr--; }
+                        if (xcurr + 1 != x.Length) xnum = int.Parse(x.Substring(xcurr + 1));
+                        while (ycurr >= 0 && y[ycurr] >= '0' && y[ycurr] <= '9') { ycurr--; }
+                        if (ycurr + 1 != y.Length) ynum = int.Parse(y.Substring(ycurr + 1));
+                        int namecomp = y.Substring(0, ycurr + 1).CompareTo(x.Substring(0, xcurr + 1));
+                        return namecomp != 0 ? namecomp : ynum.CompareTo(xnum);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        return 0;
+                    }
+                });
                 foreach (var path in fileList)
                     FileList.Add(new CSVFile(path.Split("\\")[^1], File.GetLastWriteTime(path)));
                 RefreshCumulativeNumber();
@@ -96,9 +120,36 @@ namespace NF_FRA
             get { return selectedFile; }
             set
             {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
                 selectedFile = value;
                 OnPropertyChanged(nameof(SelectedFile));
                 if (SelectedFile != null) DrawGraph(SelectedFile.FileName);
+                Cursor.Current = cursor;
+            }
+        }
+
+        public class MemoryFile { public MemoryFile(int index, string fileName) { Index = index; FileName = fileName; } public int Index { get; set; } public string FileName { get; set; } }
+
+        private ObservableCollection<MemoryFile> memoryList = new ObservableCollection<MemoryFile>();
+        public ObservableCollection<MemoryFile> MemoryList { get { return memoryList; } set { if (memoryList != value) memoryList = value; } }
+
+        private MemoryFile selectedMemory;
+        public MemoryFile SelectedMemory
+        {
+            get { return selectedMemory; }
+            set
+            {
+                Cursor cursor = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
+                selectedMemory = value;
+                OnPropertyChanged(nameof(SelectedMemory));
+                if (selectedMemory != null)
+                {
+                    fra51615.setReCallData(SelectedMemory.Index, "MEAS");
+                    fra51615.setMemoryCopy("SHOR");
+                }
+                Cursor.Current = cursor;
             }
         }
 
@@ -121,6 +172,8 @@ namespace NF_FRA
         { get; private set; }
         public ZeroCheckCommand ZeroCheckCommand
         { get; private set; }
+        public ShortCorrectionCommand ShortCorrectionCommand
+        { get; private set; }
         public ACDCCommand ACDCCommand
         { get; private set; }
         public DownCommand DownCommand
@@ -137,6 +190,10 @@ namespace NF_FRA
         private bool zeroCheckBackground = false;
         public bool ZeroCheckBackground
         { get { return zeroCheckBackground; } set { zeroCheckBackground = value; OnPropertyChanged(nameof(ZeroCheckBackground)); } }
+
+        private bool shortCorrectionBackground = false;
+        public bool ShortCorrectionBackground
+        { get { return shortCorrectionBackground; } set { shortCorrectionBackground = value; OnPropertyChanged(nameof(ShortCorrectionBackground)); } }
 
         private bool upBackground = false;
         public bool UpBackground

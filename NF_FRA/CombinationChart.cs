@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -18,7 +19,6 @@ namespace NF_FRA
             this.chart = chart;
             chart.ChartAreas.Add("ChartArea1");
             chart.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.DarkGray;
-            chart.ChartAreas[0].AxisX.Minimum = 0;
             chart.ChartAreas[0].AxisX.Title = "Frequency [Hz]";
             chart.ChartAreas[0].AxisX.TitleFont = titleFont;
             chart.ChartAreas[0].AxisX.LabelStyle.Font = labelFont;
@@ -56,9 +56,26 @@ namespace NF_FRA
 
             chart.FormatNumber += (sender, e) => { if (sender as Axis != chart.ChartAreas[0].AxisY2) e.LocalizedValue = e.Value.ToString("G2"); if (e.Value == 0) e.LocalizedValue = "0"; };
         }
+        int Pow10(int x)
+        {
+            int ret = 1;
+            for (int i = 0; i < x; i++)
+                ret *= 10;
+            return ret;
+        }
+
         public void Add(Series series, double x, double y)
         {
             series.Points.AddXY(x, y);
+            double xmin = double.MaxValue, xmax = double.MinValue;
+            foreach (var p in series.Points)
+            {
+                xmin = Math.Min(xmin, p.XValue);
+                xmax = Math.Max(xmax, p.XValue);
+            }
+            chart.ChartAreas[0].AxisX.Minimum = Pow10((int)Math.Floor(Math.Log10(xmin)));
+            chart.ChartAreas[0].AxisX.Maximum = Pow10((int)Math.Ceiling(Math.Log10(xmax)));
+            chart.ChartAreas[0].AxisX.IsLogarithmic = true;
         }
 
         public void Add(List<FRAData> list)
@@ -71,6 +88,7 @@ namespace NF_FRA
         }
         public void Clear()
         {
+            chart.ChartAreas[0].AxisX.IsLogarithmic = false;
             series1.Points.Clear();
             series2.Points.Clear();
         }
